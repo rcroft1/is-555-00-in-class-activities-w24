@@ -33,6 +33,15 @@ df <- df %>%
 
 # group and summarize. Pay attention to NAs
 # get a count and mean mass by species
+df %>%
+  group_by(species) %>% 
+  # filter(!is.na(mass)) %>% 
+  summarize(species_count = n(),
+            na_count = sum(is.na(mass)),
+            avg_mass = mean(mass, na.rm = TRUE)) 
+
+df %>% 
+  filter(species == 'Chagrian')
 
 df %>% 
   group_by(species) %>%
