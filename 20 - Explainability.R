@@ -59,6 +59,10 @@ top_features <- final_lr %>% extract_fit_parsnip() %>% tidy() %>%  dplyr::slice(
 
 
 # Why does this produce "Warnings"? See also the next question.
+
+# The errors are a results of the data not going through the recipe to be cleaned. As a result, the data does not match what the
+# expects. The prediction column is not made into a factor also.
+
 explainer_lr <- DALEX::explain(model = final_lr %>% extract_fit_parsnip(), 
                                data = cars_training %>% select(-sellingprice_log),
                                y = cars_training %>% pull(sellingprice_log), 
@@ -66,6 +70,9 @@ explainer_lr <- DALEX::explain(model = final_lr %>% extract_fit_parsnip(),
 
 # Those warnings lead to an error here. Why?
 # Hint: You can also compare the DALEX::explain() function call above to the one below.
+
+# There are no dummy coded variables so the model isn't getting the same columns as it was trained on
+
 model_profile(explainer_lr, variables = top_features)
 
 
@@ -91,7 +98,15 @@ final_xgb %>% collect_metrics()
 
 # Now see if you can interpret these plots:
 # Why do they look so different? 
+
+# The linear regression produces linear results while the XG Boost makes decisions in a different way.
+#They both say that the same features have a big effect on the model
+
 # What does this tell you about why xgboost has better performance than linear regression?
+
+#The xg boost has slope that varies for the features depending on the x axis. This demonstrates that prices fluxuate
+# at non-constant rates. For example the first 25,000 miles on a car affect cost much more than the next 50,000
+
 pdp_lr <- model_profile(explainer_lr, variables = top_features)
 pdp_xgb <- model_profile(explainer_xgb, variables = top_features)
 plot(pdp_lr)
@@ -101,6 +116,13 @@ plot(pdp_xgb)
 # And another method:
 # Why do these variable importance plots look so different?
 # Again, what does that tell you about the fundamental differences between xgboost and linear regression?
+
+# XG Boost handles multicollinearity using feature selection.
+# These plots look different because of the way that the models handle each column. Fundamentally, a linear regression
+# fits everything to be a line for better or worse. XG boost accurately reflects the weight of a step on the X
+# axis for a feature based on how high or low it is.
+
+
 vip(final_lr %>% extract_fit_parsnip())
 vip(final_xgb %>% extract_fit_parsnip())
 
